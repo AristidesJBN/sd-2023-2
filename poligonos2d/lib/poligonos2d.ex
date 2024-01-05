@@ -39,6 +39,16 @@ defmodule SD do
 
       poligono
     end
+
+    def adicionar_reflexao(poligono) do
+      poligono_refletido = reflexao_temporaria(poligono)
+
+      IO.puts("Plígono refletido temporáriamente?")
+      IO.inspect(poligono_refletido)
+
+      poligono_refletido
+    end
+
   end
 
   def poligono_interativo do
@@ -71,6 +81,10 @@ defmodule SD do
               loop(poligono)
 
             "2" ->
+             poligono = Poligono.adicionar_reflexao(poligono)
+              loop(poligono)
+
+            "3" ->
               loop(poligono)
 
             _ ->
