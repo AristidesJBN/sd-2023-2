@@ -1,4 +1,14 @@
 defmodule SD do
+  @menu """
+  _______________________
+  1. Novo polígono
+  2. Listar polígonos
+  3. Editar polígonos
+  4. Deletar poligonos
+  5. Sair
+  _______________________
+  """
+
   defmodule Ponto do
     defstruct [:x, :y]
   end
@@ -17,9 +27,9 @@ defmodule SD do
     end
 
     def criar_pontos(qtd_pontos) do
-      for _ <- 1..qtd_pontos do
-        x = String.trim(IO.gets("Insira o X do ponto: ")) |> String.to_integer()
-        y = String.trim(IO.gets("Insira o Y do ponto: ")) |> String.to_integer()
+      for i <- 1..qtd_pontos do
+        x = String.trim(IO.gets("Insira o X do #{i}º ponto: ")) |> String.to_integer()
+        y = String.trim(IO.gets("Insira o Y do #{i}º ponto: ")) |> String.to_integer()
         %Ponto{x: x, y: y}
       end
     end
@@ -28,42 +38,58 @@ defmodule SD do
       IO.puts("Polígonos cadastrados:")
       Enum.each(poligonos, fn poligono ->
         IO.puts("#{poligono.nome} - Pontos: #{length(poligono.pontos)}")
+        IO.puts("  Coordenadas dos Pontos:")
+        Enum.each(poligono.pontos, fn ponto ->
+          IO.puts("    X: #{ponto.x}, Y: #{ponto.y}")
+        end)
       end)
     end
 
     def editar_poligono(poligonos) do
-      IO.puts("Escolha o polígono para editar:")
+      IO.puts("Escolha o polígono para editar (ou 'voltar' para retornar ao menu): ")
       Enum.each(poligonos, fn poligono ->
         IO.puts("#{poligono.nome}")
       end)
-      escolhido = String.trim(IO.gets("Digite o nome do polígono desejado: "))
-      editar_poligono_interno(poligonos, escolhido)
-    end
+      escolhido = String.trim(IO.gets("Digite: "))
 
-    def editar_poligono_interno(poligonos, escolhido) do
-      poligono =
-        Enum.find_value(poligonos, fn p ->
-          p.nome == escolhido
-        end)
-
-      case poligono do
-        nil ->
-          IO.puts("Polígono não encontrado.")
+      case escolhido do
+        "voltar" ->
           poligonos
         _ ->
-          IO.puts("Edição de pontos:")
-          novo_pontos = criar_pontos(length(poligono.pontos))
-          %{poligono | pontos: novo_pontos}
+          editar_poligono_interno(poligonos, escolhido)
       end
     end
 
+    def editar_poligono_interno(poligonos, escolhido) do
+      case Enum.find(poligonos, &(&1.nome == escolhido)) do
+        nil ->
+          IO.puts("Polígono não encontrado.")
+          poligonos
+        poligono ->
+          IO.puts("Edição de pontos para o polígono #{poligono.nome}: ")
+          qtd_pontos = length(poligono.pontos || [])
+          novo_pontos = criar_pontos(qtd_pontos)
+          Enum.map(poligonos, fn p ->
+            if p.nome == escolhido, do: %{p | pontos: novo_pontos}, else: p
+          end)
+      end
+    end
+
+
+
     def deletar_poligono(poligonos) do
-      IO.puts("Escolha o polígono para deletar:")
+      IO.puts("Escolha o polígono para deletar (ou 'voltar' para retornar ao menu):")
       Enum.each(poligonos, fn poligono ->
         IO.puts("#{poligono.nome}")
       end)
-      escolhido = String.trim(IO.gets("Digite o nome do polígono a ser deletado: "))
-      Enum.filter(poligonos, fn p -> p.nome != escolhido end)
+      escolhido = String.trim(IO.gets("Digite o nome do polígono a ser deletado (ou 'voltar' para retornar ao menu): "))
+
+      case escolhido do
+        "voltar" ->
+          poligonos
+        _ ->
+          Enum.filter(poligonos, fn p -> p.nome != escolhido end)
+      end
     end
   end
 
@@ -72,12 +98,7 @@ defmodule SD do
   end
 
   defp loop(poligonos) do
-    IO.puts("Escolha uma opção:")
-    IO.puts("1. Novo polígono")
-    IO.puts("2. Listar polígonos")
-    IO.puts("3. Editar polígonos")
-    IO.puts("4. Deletar polígonos")
-    IO.puts("5. Sair")
+    IO.puts(@menu)
 
     case String.trim(IO.gets("> ")) do
       "1" ->
