@@ -155,15 +155,15 @@ defmodule SD do
 
       case String.trim(IO.gets("> ")) do
         "1" ->
-          poligono_refletido = reflexao(poligono, x_factor: -1, y_factor: 1)
+          poligono_refletido = reflexao(poligono, %{x: -1, y: 1})
           apresentar_poligono("Polígono refletido em relação ao eixo X", poligono_refletido)
           poligonos
         "2" ->
-          poligono_refletido = reflexao(poligono, x_factor: 1, y_factor: -1)
+          poligono_refletido = reflexao(poligono, %{x: 1, y: -1})
           apresentar_poligono("Polígono refletido em relação ao eixo Y", poligono_refletido)
           poligonos
         "3" ->
-          poligono_refletido = reflexao(poligono, x_factor: -1, y_factor: -1)
+          poligono_refletido = reflexao(poligono, %{x: -1, y: -1})
           apresentar_poligono("Polígono refletido em relação a ambos os eixos", poligono_refletido)
           poligonos
         "4" ->
