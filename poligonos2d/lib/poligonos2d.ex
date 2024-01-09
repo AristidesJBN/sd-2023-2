@@ -115,7 +115,8 @@ defmodule SD do
           IO.puts("Escolha uma opção para interagir com o polígono #{poligono.nome}: ")
           IO.puts("1. Adicionar Translação")
           IO.puts("2. Adicionar Reflexão")
-          IO.puts("3. Voltar")
+          IO.puts("3. Adicionar Escala")
+          IO.puts("4. Voltar")
 
           case String.trim(IO.gets("> ")) do
             "1" ->
@@ -125,6 +126,9 @@ defmodule SD do
               poligonos_atualizados = adicionar_reflexao(poligonos, poligono)
               interagir_com_poligono(poligonos_atualizados)
             "3" ->
+              poligonos_atualizados = adicionar_escala(poligonos, poligono)
+              interagir_com_poligono(poligonos_atualizados)
+            "4" ->
               poligonos
             _ ->
               IO.puts("Opção inválida. Tente novamente.")
@@ -151,15 +155,15 @@ defmodule SD do
 
       case String.trim(IO.gets("> ")) do
         "1" ->
-          poligono_refletido = reflexao(poligono, %{x: -1, y: 1})
+          poligono_refletido = reflexao(poligono, x_factor: -1, y_factor: 1)
           apresentar_poligono("Polígono refletido em relação ao eixo X", poligono_refletido)
           poligonos
         "2" ->
-          poligono_refletido = reflexao(poligono, %{x: 1, y: -1})
+          poligono_refletido = reflexao(poligono, x_factor: 1, y_factor: -1)
           apresentar_poligono("Polígono refletido em relação ao eixo Y", poligono_refletido)
           poligonos
         "3" ->
-          poligono_refletido = reflexao(poligono, %{x: -1, y: -1})
+          poligono_refletido = reflexao(poligono, x_factor: -1, y_factor: -1)
           apresentar_poligono("Polígono refletido em relação a ambos os eixos", poligono_refletido)
           poligonos
         "4" ->
@@ -167,6 +171,35 @@ defmodule SD do
         _ ->
           IO.puts("Opção inválida. Tente novamente.")
           adicionar_reflexao(poligonos, poligono)
+      end
+    end
+
+    def adicionar_escala(poligonos, poligono) do
+      {sx, sy} =
+        case {obter_fator_escala("X"), obter_fator_escala("Y")} do
+          {x, y} when is_float(x) and is_float(y) ->
+            {x, y}
+          _ ->
+            IO.puts("Fatores de escala inválidos. Tente novamente.")
+            adicionar_escala(poligonos, poligono)
+        end
+
+      poligono_escalonado = escala_temporaria(poligono, sx, sy)
+      apresentar_poligono("Polígono escalonado", poligono_escalonado)
+      poligonos
+    end
+
+    defp obter_fator_escala(eixo) do
+      IO.puts("Digite o fator de escala (em decimal) para #{eixo}:")
+      input = String.trim(IO.gets("Fator de escala para #{eixo}: "))
+      to_float_or_nil(input)
+    end
+
+    defp to_float_or_nil(str) do
+      try do
+        String.to_float(str)
+      rescue
+        ArgumentError -> nil
       end
     end
 
@@ -179,11 +212,19 @@ defmodule SD do
     end
 
     defp reflexao(poligono, %{x: x_factor, y: y_factor}) do
-      pontos_refletidos = Enum.map(poligono.pontos, fn ponto ->
+      pontos_atualizados = Enum.map(poligono.pontos, fn ponto ->
         %Ponto{x: ponto.x * x_factor, y: ponto.y * y_factor}
       end)
 
-      %Poligono{poligono | pontos: pontos_refletidos}
+      %Poligono{poligono | pontos: pontos_atualizados}
+    end
+
+    defp escala_temporaria(poligono, sx, sy) do
+      pontos_atualizados = Enum.map(poligono.pontos, fn ponto ->
+        %Ponto{x: ponto.x * sx, y: ponto.y * sy}
+      end)
+
+      %Poligono{poligono | pontos: pontos_atualizados}
     end
 
     defp apresentar_poligono(titulo, poligono) do
