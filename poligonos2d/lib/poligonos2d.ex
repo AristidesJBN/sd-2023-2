@@ -204,9 +204,14 @@ defmodule SD do
     end
 
     defp translacao_temporaria(poligono, dx, dy) do
-      pontos_atualizados = Enum.map(poligono.pontos, fn ponto ->
-        %Ponto{x: ponto.x + dx, y: ponto.y + dy}
-      end)
+      pontos_atualizados =
+        poligono.pontos
+        |> Enum.map(fn ponto ->
+          Task.async(fn ->
+            %Ponto{x: ponto.x + dx, y: ponto.y + dy}
+          end)
+        end)
+        |> Enum.map(&Task.await/1)
 
       %Poligono{poligono | pontos: pontos_atualizados}
     end
